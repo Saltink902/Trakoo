@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ensureSession } from "@/lib/auth";
 import { saveFood, getFoodByDate } from "@/lib/food";
 import { useCallback, useEffect, useState } from "react";
@@ -92,7 +93,7 @@ export function FoodTracker() {
           Fuel your body, track your bites.
         </p>
         <div className="flex justify-center mb-3">
-          <img src="/food.png" alt="" className="h-[120px] w-[120px] object-contain" aria-hidden />
+          <Image src="/food.png" alt="" width={120} height={120} className="h-[120px] w-[120px] object-contain" aria-hidden />
         </div>
       </section>
 

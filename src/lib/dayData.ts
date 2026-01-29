@@ -94,18 +94,22 @@ export async function getDayData(date: string): Promise<{
     if (periodRes.error) console.error("[getDayData] period_entries:", periodRes.error);
   }
 
-  const moodForDay = (moodRes.data ?? []).find(
-    (row) => toLocalDateString((row as MoodEntry).created_at) === date
-  ) as MoodEntry | undefined;
-  const poopForDay = (poopRes.data ?? []).find(
-    (row) => toLocalDateString((row as PoopEntry).logged_at) === date
-  ) as PoopEntry | undefined;
-  const illnessForDay = (illnessRes.data ?? []).find(
-    (row) => toLocalDateString((row as IllnessEntry).logged_at) === date
-  ) as IllnessEntry | undefined;
-  const foodForDay = (foodRes.data ?? []).find(
-    (row) => toLocalDateString((row as FoodEntry).logged_at!) === date
-  ) as FoodEntry | undefined;
+  const moodForDay = (moodRes.data ?? []).find((row) => {
+    const at = (row as MoodEntry).created_at;
+    return at != null && toLocalDateString(at) === date;
+  }) as MoodEntry | undefined;
+  const poopForDay = (poopRes.data ?? []).find((row) => {
+    const at = (row as PoopEntry).logged_at;
+    return at != null && toLocalDateString(at) === date;
+  }) as PoopEntry | undefined;
+  const illnessForDay = (illnessRes.data ?? []).find((row) => {
+    const at = (row as IllnessEntry).logged_at;
+    return at != null && toLocalDateString(at) === date;
+  }) as IllnessEntry | undefined;
+  const foodForDay = (foodRes.data ?? []).find((row) => {
+    const at = (row as FoodEntry).logged_at;
+    return at != null && toLocalDateString(at) === date;
+  }) as FoodEntry | undefined;
 
   const hasPeriod = periodRes.data != null;
 
