@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-trakoo-bg text-trakoo-text;
+    /* iPhone safe areas */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* App background: image with fallback */
+.bg-dashboard-gradient {
+  background-color: #f5e8ef;
+  background-image: url("/background.jpeg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+}
+
+/* Soft card / pill */
+.soft-pill {
+  @apply rounded-full shadow-sm;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+.soft-card {
+  @apply rounded-3xl shadow-sm;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+}
+
+/* Swipeable pages: hide scrollbar, touch-friendly */
+.pages-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pages-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* iPhone frame: hide on mobile, show on desktop */
+@media (max-width: 1023px) {
+  .iphone-frame-wrapper {
+    display: none;
+  }
+}
