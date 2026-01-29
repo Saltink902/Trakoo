@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useState } from "react";
 import { ILLNESS_TYPES, type IllnessTypeId } from "@/lib/illness";
 
@@ -71,13 +72,14 @@ export function IllnessChecklist({
                     {FALLBACK_EMOJI[t.id]}
                   </span>
                 ) : (
-                  <img
+                  <Image
                     src={t.icon}
                     alt=""
                     width={ICON_SIZE}
                     height={ICON_SIZE}
-                    loading="eager"
                     className="w-full h-full object-contain"
+                    unoptimized
+                    priority
                     onError={() => handleError(t.icon)}
                   />
                 )}
