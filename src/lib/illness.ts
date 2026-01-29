@@ -1,6 +1,17 @@
 import { supabase } from "./supabase";
 
-export type IllnessTypeId = "sick" | "fever" | "headache" | "stomach_bug" | "ulcer" | "advil";
+export type IllnessTypeId =
+  | "sick"
+  | "fever"
+  | "headache"
+  | "stomach_bug"
+  | "ulcer"
+  | "advil"
+  | "anxiety"
+  | "bloating"
+  | "cramps"
+  | "fatigue"
+  | "nausea";
 
 export type IllnessType = {
   id: IllnessTypeId;
@@ -17,6 +28,11 @@ export const ILLNESS_TYPES: IllnessType[] = [
   { id: "stomach_bug", label: "Stomach bug", color: "#c4a8e8", bg: "bg-[#c4a8e8]", icon: "/illness/bug.png?v=2" },
   { id: "ulcer", label: "Ulcer", color: "#a8e0b8", bg: "bg-[#a8e0b8]", icon: "/illness/ulcer.png" },
   { id: "advil", label: "Advil", color: "#a8c5e8", bg: "bg-[#a8c5e8]", icon: "/illness/advil.png" },
+  { id: "anxiety", label: "Anxiety", color: "#d4b8e8", bg: "bg-[#d4b8e8]", icon: "/illness/anxiety.png" },
+  { id: "bloating", label: "Bloating", color: "#b8e0d4", bg: "bg-[#b8e0d4]", icon: "/illness/bloating.png" },
+  { id: "cramps", label: "Cramps", color: "#e8d4a8", bg: "bg-[#e8d4a8]", icon: "/illness/cramps.png" },
+  { id: "fatigue", label: "Fatigue", color: "#a8c8e8", bg: "bg-[#a8c8e8]", icon: "/illness/fatigue.png" },
+  { id: "nausea", label: "Nausea", color: "#e8b8c4", bg: "bg-[#e8b8c4]", icon: "/illness/nausea.png" },
 ];
 
 export type IllnessEntry = {

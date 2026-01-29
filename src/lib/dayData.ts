@@ -2,14 +2,27 @@ import { supabase } from "./supabase";
 import type { MoodEntry } from "./mood";
 import type { PoopEntry } from "./poop";
 import type { IllnessEntry } from "./illness";
+import type { FoodEntry } from "./food";
+import { getPeriodByDate } from "./period";
 
 export type DayData = {
   date: string;
   mood?: MoodEntry;
   poop?: PoopEntry;
   illness?: IllnessEntry;
+  food?: FoodEntry;
+  hasPeriod?: boolean;
   notes?: string;
 };
+
+/** Get local YYYY-MM-DD from an ISO timestamp (matches calendar logic on all devices). */
+function toLocalDateString(iso: string): string {
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 export async function getDayData(date: string): Promise<{
   data: DayData | null;
@@ -30,55 +43,83 @@ export async function getDayData(date: string): Promise<{
     console.log("[getDayData] current user_id:", user.id);
   }
 
-  const startOfDay = new Date(`${date}T00:00:00`).toISOString();
-  const endOfDay = new Date(`${date}T23:59:59.999`).toISOString();
+  // Use a wide UTC window so we don't miss entries due to timezone (e.g. on phone).
+  // Then filter in JS by local date so "today" is always the device's local day.
+  const dayStart = new Date(`${date}T00:00:00`);
+  const dayEnd = new Date(`${date}T23:59:59.999`);
+  const windowStart = new Date(dayStart);
+  windowStart.setDate(windowStart.getDate() - 1);
+  const windowEnd = new Date(dayEnd);
+  windowEnd.setDate(windowEnd.getDate() + 1);
+  const startISO = windowStart.toISOString();
+  const endISO = windowEnd.toISOString();
 
-  const [moodRes, poopRes, illnessRes] = await Promise.all([
+  const [moodRes, poopRes, illnessRes, foodRes, periodRes] = await Promise.all([
     supabase
       .from("mood_entries")
       .select("id, user_id, mood, notes, created_at")
       .eq("user_id", user.id)
-      .gte("created_at", startOfDay)
-      .lte("created_at", endOfDay)
-      .order("created_at", { ascending: false })
-      .limit(1),
+      .gte("created_at", startISO)
+      .lte("created_at", endISO)
+      .order("created_at", { ascending: false }),
     supabase
       .from("poop_entries")
       .select("id, user_id, logged_at, type, notes")
       .eq("user_id", user.id)
-      .gte("logged_at", startOfDay)
-      .lte("logged_at", endOfDay)
-      .order("logged_at", { ascending: false })
-      .limit(1),
+      .gte("logged_at", startISO)
+      .lte("logged_at", endISO)
+      .order("logged_at", { ascending: false }),
     supabase
       .from("illness_entries")
       .select("id, user_id, illness_types, notes, logged_at")
       .eq("user_id", user.id)
-      .gte("logged_at", startOfDay)
-      .lte("logged_at", endOfDay)
-      .order("logged_at", { ascending: false })
-      .limit(1),
+      .gte("logged_at", startISO)
+      .lte("logged_at", endISO)
+      .order("logged_at", { ascending: false }),
+    supabase
+      .from("food_entries")
+      .select("id, user_id, breakfast, lunch, snack, dinner, logged_at, created_at")
+      .eq("user_id", user.id)
+      .gte("logged_at", startISO)
+      .lte("logged_at", endISO)
+      .order("logged_at", { ascending: false }),
+    getPeriodByDate(date),
   ]);
 
   if (process.env.NODE_ENV === "development") {
     if (moodRes.error) console.error("[getDayData] mood_entries:", moodRes.error);
     if (poopRes.error) console.error("[getDayData] poop_entries:", poopRes.error);
     if (illnessRes.error) console.error("[getDayData] illness_entries:", illnessRes.error);
+    if (foodRes.error) console.error("[getDayData] food_entries:", foodRes.error);
+    if (periodRes.error) console.error("[getDayData] period_entries:", periodRes.error);
   }
 
-  const moodData = moodRes.data;
-  const poopData = poopRes.data;
-  const illnessData = illnessRes.data;
+  const moodForDay = (moodRes.data ?? []).find(
+    (row) => toLocalDateString((row as MoodEntry).created_at) === date
+  ) as MoodEntry | undefined;
+  const poopForDay = (poopRes.data ?? []).find(
+    (row) => toLocalDateString((row as PoopEntry).logged_at) === date
+  ) as PoopEntry | undefined;
+  const illnessForDay = (illnessRes.data ?? []).find(
+    (row) => toLocalDateString((row as IllnessEntry).logged_at) === date
+  ) as IllnessEntry | undefined;
+  const foodForDay = (foodRes.data ?? []).find(
+    (row) => toLocalDateString((row as FoodEntry).logged_at!) === date
+  ) as FoodEntry | undefined;
+
+  const hasPeriod = periodRes.data != null;
 
   const dayData: DayData = {
     date,
-    mood: moodData && moodData.length > 0 ? (moodData[0] as MoodEntry) : undefined,
-    poop: poopData && poopData.length > 0 ? (poopData[0] as PoopEntry) : undefined,
-    illness: illnessData && illnessData.length > 0 ? (illnessData[0] as IllnessEntry) : undefined,
+    mood: moodForDay,
+    poop: poopForDay,
+    illness: illnessForDay,
+    food: foodForDay,
+    hasPeriod,
   };
 
   if (process.env.NODE_ENV === "development") {
-    console.log("[getDayData]", date, "mood:", !!dayData.mood, "poop:", !!dayData.poop, "illness:", !!dayData.illness);
+    console.log("[getDayData]", date, "mood:", !!dayData.mood, "poop:", !!dayData.poop, "illness:", !!dayData.illness, "food:", !!dayData.food, "period:", dayData.hasPeriod);
   }
 
   return { data: dayData, error: null };

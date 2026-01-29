@@ -129,7 +129,7 @@ export function MoodDashboard() {
 
       <section className="w-full text-center mb-12">
         <p className="text-[20px] text-black mb-2 font-normal">
-          Hello Sally,
+          Hello Gorgeous,
         </p>
         <h1 className="text-[32px] leading-[1.2] font-bold text-[#1a1a1a] tracking-tight max-w-md mx-auto mb-3">
           How are you really feeling today?
@@ -185,10 +185,6 @@ export function MoodDashboard() {
         />
       </section>
 
-      <p className="mt-auto pt-6 text-center text-sm text-trakoo-muted">
-        Swipe left for poop tracker →
-      </p>
-
       {/* Day Details Modal */}
       {selectedDate && !loadingDay && !!(dayData || dayError) && (
         !!dayError ? (
@@ -213,6 +209,8 @@ export function MoodDashboard() {
             moodId={dayData.mood?.mood}
             poopType={dayData.poop?.type ?? undefined}
             illnessTypes={dayData.illness?.illness_types}
+            food={dayData.food ?? undefined}
+            hasPeriod={dayData.hasPeriod}
             notes={dayData.mood?.notes ?? dayData.poop?.notes ?? dayData.illness?.notes ?? undefined}
             onClose={handleCloseModal}
           />

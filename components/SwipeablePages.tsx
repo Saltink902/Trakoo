@@ -3,9 +3,12 @@
 import { MoodDashboard } from "@/components/MoodDashboard";
 import { PoopTracker } from "@/components/PoopTracker";
 import { IllnessTracker } from "@/components/IllnessTracker";
+import { FoodTracker } from "@/components/FoodTracker";
+import { PeriodTracker } from "@/components/PeriodTracker";
+import { InsightsPage } from "@/components/InsightsPage";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const PAGES = ["Mood", "Poop", "Illness"] as const;
+const PAGES = ["Mood", "Poop", "Food", "Illness", "Period", "Insights"] as const;
 
 export function SwipeablePages() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -63,7 +66,25 @@ export function SwipeablePages() {
           className="flex flex-1 min-w-full w-full h-full snap-start shrink-0 overflow-y-auto"
           style={{ scrollSnapAlign: "start" }}
         >
+          <FoodTracker />
+        </div>
+        <div
+          className="flex flex-1 min-w-full w-full h-full snap-start shrink-0 overflow-y-auto"
+          style={{ scrollSnapAlign: "start" }}
+        >
           <IllnessTracker />
+        </div>
+        <div
+          className="flex flex-1 min-w-full w-full h-full snap-start shrink-0 overflow-y-auto"
+          style={{ scrollSnapAlign: "start" }}
+        >
+          <PeriodTracker />
+        </div>
+        <div
+          className="flex flex-1 min-w-full w-full h-full snap-start shrink-0 overflow-y-auto"
+          style={{ scrollSnapAlign: "start" }}
+        >
+          <InsightsPage />
         </div>
       </div>
 

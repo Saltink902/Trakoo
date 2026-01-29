@@ -56,7 +56,6 @@ export function PoopTracker() {
       </header>
 
       <section className="w-full text-center mb-12">
-        <div className="text-[20px] mb-2 min-h-[1.5em]" aria-hidden="true" />
         <h1 className="text-[32px] leading-[1.2] font-bold text-[#1a1a1a] tracking-tight max-w-md mx-auto mb-3">
           What was your poop like today?
         </h1>

@@ -112,7 +112,6 @@ export function IllnessTracker() {
       </header>
 
       <section className="w-full text-center mb-8">
-        <div className="text-[20px] mb-2 min-h-[1.5em]" aria-hidden="true" />
         <h1 className="text-[32px] leading-[1.2] font-bold text-[#1a1a1a] tracking-tight max-w-md mx-auto mb-3">
           What are you experiencing today?
         </h1>
@@ -153,17 +152,15 @@ export function IllnessTracker() {
         />
       </section>
 
-      <p className="mt-auto pt-6 text-center text-sm text-trakoo-muted">
-        ← Swipe right for poop tracker
-      </p>
-
       {selectedDate && dayData && !loadingDay && (
         <DayDetailsModal
           date={selectedDate}
           moodId={dayData.mood?.mood}
           poopType={dayData.poop?.type ?? undefined}
-          notes={dayData.mood?.notes ?? dayData.poop?.notes ?? dayData.illness?.notes ?? undefined}
           illnessTypes={dayData.illness?.illness_types}
+          food={dayData.food ?? undefined}
+          hasPeriod={dayData.hasPeriod}
+          notes={dayData.mood?.notes ?? dayData.poop?.notes ?? dayData.illness?.notes ?? undefined}
           onClose={handleCloseModal}
         />
       )}

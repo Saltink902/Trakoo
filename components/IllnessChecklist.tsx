@@ -21,6 +21,11 @@ const FALLBACK_EMOJI: Record<IllnessTypeId, string> = {
   stomach_bug: "🐛",
   ulcer: "🫀",
   advil: "💊",
+  anxiety: "😰",
+  bloating: "🎈",
+  cramps: "😣",
+  fatigue: "😴",
+  nausea: "🤢",
 };
 
 export function IllnessChecklist({

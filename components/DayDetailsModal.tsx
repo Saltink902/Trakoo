@@ -4,11 +4,20 @@ import { MOODS } from "@/components/MoodCarousel";
 import { POOP_TYPES } from "@/components/PoopCarousel";
 import { ILLNESS_TYPES } from "@/lib/illness";
 
+export type DayFood = {
+  breakfast?: string | null;
+  lunch?: string | null;
+  snack?: string | null;
+  dinner?: string | null;
+};
+
 type DayDetailsProps = {
   date: string; // YYYY-MM-DD
   moodId?: number;
   poopType?: number;
   illnessTypes?: string[];
+  food?: DayFood | null;
+  hasPeriod?: boolean;
   notes?: string;
   onClose: () => void;
 };
@@ -28,14 +37,15 @@ function formatDisplayDate(dateStr: string): string {
   return date.toLocaleDateString([], { dateStyle: "long" });
 }
 
-export function DayDetailsModal({ date, moodId, poopType, illnessTypes, notes, onClose }: DayDetailsProps) {
+export function DayDetailsModal({ date, moodId, poopType, illnessTypes, food, hasPeriod, notes, onClose }: DayDetailsProps) {
   const mood = MOODS.find((m) => m.id === moodId);
   const poop = POOP_TYPES.find((p) => p.id === poopType);
   const illnessLabels = (illnessTypes ?? [])
     .map((id) => ILLNESS_TYPES.find((t) => t.id === id)?.label)
     .filter(Boolean) as string[];
 
-  const hasAnyData = moodId != null || poopType != null || (illnessLabels.length > 0) || !!notes;
+  const hasFood = food && (food.breakfast || food.lunch || food.snack || food.dinner);
+  const hasAnyData = moodId != null || poopType != null || (illnessLabels.length > 0) || !!hasFood || !!hasPeriod || !!notes;
   
   return (
     <div
@@ -61,9 +71,9 @@ export function DayDetailsModal({ date, moodId, poopType, illnessTypes, notes, o
         {/* Content */}
         <div className="px-6 py-6 max-h-[60vh] overflow-y-auto">
           {!hasAnyData ? (
-            <div className="text-center py-8 text-trakoo-muted">
+            <div className="text-center py-8 text-trakoo-muted space-y-2">
               <p>No entries for this day yet.</p>
-              <p className="text-sm mt-2">Start tracking to see your data here!</p>
+              <p className="text-sm">If you just logged something, close and tap the day again to refresh.</p>
             </div>
           ) : (
             <div className="space-y-6">
@@ -110,6 +120,41 @@ export function DayDetailsModal({ date, moodId, poopType, illnessTypes, notes, o
                         {illnessLabels.join(", ")}
                       </p>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Period Entry */}
+              {hasPeriod && (
+                <div className="soft-card p-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: "#FF6B6B" }}
+                      aria-hidden
+                    />
+                    <div>
+                      <h3 className="font-semibold text-trakoo-text">Period</h3>
+                      <p className="text-sm text-trakoo-muted">Yes</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Food Entry */}
+              {hasFood && (
+                <div className="soft-card p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0">
+                      <img src="/food.png" alt="" className="h-8 w-8 object-contain" aria-hidden />
+                    </div>
+                    <h3 className="font-semibold text-trakoo-text">Food</h3>
+                  </div>
+                  <div className="space-y-2 text-sm text-trakoo-muted">
+                    {food?.breakfast && <p><span className="font-medium text-trakoo-text">Breakfast:</span> {food.breakfast}</p>}
+                    {food?.lunch && <p><span className="font-medium text-trakoo-text">Lunch:</span> {food.lunch}</p>}
+                    {food?.snack && <p><span className="font-medium text-trakoo-text">Snacks:</span> {food.snack}</p>}
+                    {food?.dinner && <p><span className="font-medium text-trakoo-text">Dinner:</span> {food.dinner}</p>}
                   </div>
                 </div>
               )}
