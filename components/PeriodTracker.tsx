@@ -70,8 +70,8 @@ export function PeriodTracker() {
   }, [currentYear, currentMonth, fetchMonthDates]);
 
   useEffect(() => {
-    fetchYearData(currentYear);
-  }, [currentYear, fetchYearData]);
+    fetchYearData(now.getFullYear());
+  }, [fetchYearData]);
 
   useEffect(() => {
     fetchAllPeriodDates();
@@ -80,7 +80,7 @@ export function PeriodTracker() {
   useEffect(() => {
     const refresh = () => {
       fetchMonthDates(currentYear, currentMonth);
-      fetchYearData(currentYear);
+      fetchYearData(now.getFullYear());
       fetchAllPeriodDates();
     };
     const onVisible = () => {

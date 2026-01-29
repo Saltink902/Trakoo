@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { MOODS } from "@/components/MoodCarousel";
 import { POOP_TYPES } from "@/components/PoopCarousel";
 import { ILLNESS_TYPES } from "@/lib/illness";
@@ -147,7 +146,7 @@ export function DayDetailsModal({ date, moodId, poopType, illnessTypes, food, ha
                 <div className="soft-card p-4">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-                      <Image src="/food.png" alt="" width={32} height={32} className="h-8 w-8 object-contain" aria-hidden />
+                      <img src="/food.png" alt="" className="h-8 w-8 object-contain" aria-hidden />
                     </div>
                     <h3 className="font-semibold text-trakoo-text">Food</h3>
                   </div>

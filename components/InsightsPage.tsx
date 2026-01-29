@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -176,7 +175,7 @@ export function InsightsPage() {
       <div className="flex-1 overflow-y-auto px-0 pb-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
-            <Image src="/robot.png" alt="" width={120} height={120} className="h-[120px] w-[120px] object-contain mb-2" aria-hidden />
+            <img src="/robot.png" alt="" className="h-[120px] w-[120px] object-contain mb-2" aria-hidden />
             <p className="text-trakoo-muted text-sm max-w-xs">
               I can help you understand patterns in your mood, digestion, diet, symptoms, and
               menstrual cycle. Ask me anything!
