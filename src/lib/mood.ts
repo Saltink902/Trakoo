@@ -1,5 +1,6 @@
 import type { MoodId } from "@/components/MoodCarousel";
 import { supabase } from "./supabase";
+import { getTodayDateString, dateToTimestamp, getYearRangeForQuery, getDateRangeForQuery, timestampToLocalDate } from "./dateUtils";
 
 export type MoodEntry = {
   id?: string;
@@ -20,9 +21,14 @@ export async function saveMood(
   if (authError || !user) {
     return { error: authError ?? new Error("Not signed in") };
   }
+  // Save with explicit timestamp based on local date to avoid timezone issues
+  const localDate = getTodayDateString();
+  const timestamp = dateToTimestamp(localDate);
+
   const { error } = await supabase.from("mood_entries").insert({
     user_id: user.id,
     mood,
+    created_at: timestamp,
     ...(notes != null && notes !== "" ? { notes } : {}),
   });
   return { error: error ?? null };
@@ -53,11 +59,10 @@ export async function getMoodEntries(year?: number): Promise<{
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
   
-  // Filter by year if provided
+  // Filter by year if provided (using wider range for timezone safety)
   if (year) {
-    const startDate = `${year}-01-01T00:00:00Z`;
-    const endDate = `${year + 1}-01-01T00:00:00Z`;
-    query = query.gte("created_at", startDate).lt("created_at", endDate);
+    const { start, end } = getYearRangeForQuery(year);
+    query = query.gte("created_at", start).lt("created_at", end);
   }
   
   const { data, error } = await query;
@@ -82,21 +87,25 @@ export async function getDayEntries(date: string): Promise<{
     return { error: authError ?? new Error("Not signed in") };
   }
   
-  // Get entries for this specific date
-  const startOfDay = `${date}T00:00:00Z`;
-  const endOfDay = `${date}T23:59:59Z`;
-  
+  // Get entries for this specific date (using wider range for timezone safety)
+  const { start, end } = getDateRangeForQuery(date);
+
   const { data, error } = await supabase
     .from("mood_entries")
     .select("id, user_id, mood, notes, created_at")
     .eq("user_id", user.id)
-    .gte("created_at", startOfDay)
-    .lte("created_at", endOfDay)
-    .order("created_at", { ascending: false })
-    .limit(1);
+    .gte("created_at", start)
+    .lte("created_at", end)
+    .order("created_at", { ascending: false });
+
+  // Filter to only entries that match the requested local date
+  const matchingEntry = data?.find((entry) => {
+    if (!entry.created_at) return false;
+    return timestampToLocalDate(entry.created_at) === date;
+  });
   
-  return { 
-    mood: data && data.length > 0 ? (data[0] as MoodEntry) : undefined,
-    error: error ?? null 
+  return {
+    mood: matchingEntry as MoodEntry | undefined,
+    error: error ?? null
   };
 }

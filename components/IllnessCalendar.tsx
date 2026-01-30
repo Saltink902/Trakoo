@@ -1,8 +1,5 @@
 "use client";
 
-import { ILLNESS_TYPES } from "@/lib/illness";
-import type { IllnessTypeId } from "@/lib/illness";
-
 type IllnessCalendarProps = {
   year: number;
   illnessData: Record<string, string[]>; // date YYYY-MM-DD -> illness type ids
@@ -42,11 +39,11 @@ function isToday(date: Date): boolean {
   return date.toDateString() === today.toDateString();
 }
 
+const ILLNESS_DAY_GREEN = "#22c55e"; // single fill color for any illness day
+
 function getIllnessColor(typeIds: string[]): string {
   if (!typeIds.length) return "#e5e5e5";
-  const first = typeIds[0] as IllnessTypeId;
-  const t = ILLNESS_TYPES.find((x) => x.id === first);
-  return t?.color ?? "#e5e5e5";
+  return ILLNESS_DAY_GREEN;
 }
 
 export function IllnessCalendar({ year, illnessData, onDayClick }: IllnessCalendarProps) {

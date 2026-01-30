@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { ensureSession } from "@/lib/auth";
 import { saveFood, getFoodByDate } from "@/lib/food";
 import { useCallback, useEffect, useState } from "react";
 
@@ -29,10 +28,6 @@ export function FoodTracker() {
   const [snack, setSnack] = useState("");
   const [dinner, setDinner] = useState("");
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    ensureSession();
-  }, []);
 
   const loadToday = useCallback(async () => {
     const today = todayDateString();

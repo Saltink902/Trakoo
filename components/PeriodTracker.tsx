@@ -11,7 +11,6 @@ import {
 } from "@/lib/period";
 import { calculateCycleStats } from "@/lib/cycleUtils";
 import { getDayData, type DayData } from "@/lib/dayData";
-import { ensureSession } from "@/lib/auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 function getGreeting() {
@@ -40,19 +39,23 @@ export function PeriodTracker() {
     selectedDates.some((d) => !savedDates.includes(d)) ||
     savedDates.some((d) => !selectedDates.includes(d));
 
-  useEffect(() => {
-    ensureSession();
-  }, []);
-
   const fetchMonthDates = useCallback(async (year: number, month: number) => {
-    const { data } = await getPeriodDatesArray(year, month);
+    const { data, error } = await getPeriodDatesArray(year, month);
+    if (error) {
+      if (process.env.NODE_ENV === "development") console.error("[PeriodTracker] fetchMonthDates:", error);
+      return;
+    }
     const list = data ?? [];
     setSelectedDates(list);
     setSavedDates(list);
   }, []);
 
   const fetchYearData = useCallback(async (year: number) => {
-    const { data } = await getPeriodEntries(year);
+    const { data, error } = await getPeriodEntries(year);
+    if (error) {
+      if (process.env.NODE_ENV === "development") console.error("[PeriodTracker] fetchYearData:", error);
+      return;
+    }
     const map: Record<string, boolean> = {};
     (data ?? []).forEach((e) => {
       map[e.period_date] = true;
@@ -61,7 +64,11 @@ export function PeriodTracker() {
   }, []);
 
   const fetchAllPeriodDates = useCallback(async () => {
-    const { data } = await getPeriodEntries();
+    const { data, error } = await getPeriodEntries();
+    if (error) {
+      if (process.env.NODE_ENV === "development") console.error("[PeriodTracker] fetchAllPeriodDates:", error);
+      return;
+    }
     setPeriodDatesForInsights((data ?? []).map((e) => e.period_date));
   }, []);
 
@@ -136,8 +143,10 @@ export function PeriodTracker() {
         return next;
       });
       fetchAllPeriodDates();
+      fetchMonthDates(currentYear, currentMonth);
+      fetchYearData(currentYear);
     }
-  }, [selectedDates, savedDates, fetchAllPeriodDates]);
+  }, [selectedDates, savedDates, currentYear, currentMonth, fetchAllPeriodDates, fetchMonthDates, fetchYearData]);
 
   const handleMonthChange = useCallback((year: number, month: number) => {
     setCurrentYear(year);

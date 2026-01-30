@@ -4,6 +4,7 @@ import type { PoopEntry } from "./poop";
 import type { IllnessEntry } from "./illness";
 import type { FoodEntry } from "./food";
 import { getPeriodByDate } from "./period";
+import { timestampToLocalDate, getDateRangeForQuery } from "./dateUtils";
 
 export type DayData = {
   date: string;
@@ -14,15 +15,6 @@ export type DayData = {
   hasPeriod?: boolean;
   notes?: string;
 };
-
-/** Get local YYYY-MM-DD from an ISO timestamp (matches calendar logic on all devices). */
-function toLocalDateString(iso: string): string {
-  const d = new Date(iso);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
 
 export async function getDayData(date: string): Promise<{
   data: DayData | null;
@@ -45,14 +37,7 @@ export async function getDayData(date: string): Promise<{
 
   // Use a wide UTC window so we don't miss entries due to timezone (e.g. on phone).
   // Then filter in JS by local date so "today" is always the device's local day.
-  const dayStart = new Date(`${date}T00:00:00`);
-  const dayEnd = new Date(`${date}T23:59:59.999`);
-  const windowStart = new Date(dayStart);
-  windowStart.setDate(windowStart.getDate() - 1);
-  const windowEnd = new Date(dayEnd);
-  windowEnd.setDate(windowEnd.getDate() + 1);
-  const startISO = windowStart.toISOString();
-  const endISO = windowEnd.toISOString();
+  const { start: startISO, end: endISO } = getDateRangeForQuery(date);
 
   const [moodRes, poopRes, illnessRes, foodRes, periodRes] = await Promise.all([
     supabase
@@ -96,19 +81,19 @@ export async function getDayData(date: string): Promise<{
 
   const moodForDay = (moodRes.data ?? []).find((row) => {
     const at = (row as MoodEntry).created_at;
-    return at != null && toLocalDateString(at) === date;
+    return at != null && timestampToLocalDate(at) === date;
   }) as MoodEntry | undefined;
   const poopForDay = (poopRes.data ?? []).find((row) => {
     const at = (row as PoopEntry).logged_at;
-    return at != null && toLocalDateString(at) === date;
+    return at != null && timestampToLocalDate(at) === date;
   }) as PoopEntry | undefined;
   const illnessForDay = (illnessRes.data ?? []).find((row) => {
     const at = (row as IllnessEntry).logged_at;
-    return at != null && toLocalDateString(at) === date;
+    return at != null && timestampToLocalDate(at) === date;
   }) as IllnessEntry | undefined;
   const foodForDay = (foodRes.data ?? []).find((row) => {
     const at = (row as FoodEntry).logged_at;
-    return at != null && toLocalDateString(at) === date;
+    return at != null && timestampToLocalDate(at) === date;
   }) as FoodEntry | undefined;
 
   const hasPeriod = periodRes.data != null;

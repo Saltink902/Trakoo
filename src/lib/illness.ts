@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { getTodayDateString, dateToTimestamp, getYearRangeForQuery, getDateRangeForQuery, timestampToLocalDate } from "./dateUtils";
 
 export type IllnessTypeId =
   | "sick"
@@ -54,9 +55,14 @@ export async function logIllness(
   if (authError || !user) {
     return { error: authError ?? new Error("Not signed in") };
   }
+  // Save with explicit timestamp based on local date to avoid timezone issues
+  const localDate = getTodayDateString();
+  const timestamp = dateToTimestamp(localDate);
+
   const { error } = await supabase.from("illness_entries").insert({
     user_id: user.id,
     illness_types: types.length ? types : [],
+    logged_at: timestamp,
     ...(notes != null && notes !== "" ? { notes } : {}),
   });
   return { error: error ?? null };
@@ -80,10 +86,10 @@ export async function getIllnessEntries(year?: number): Promise<{
     .eq("user_id", user.id)
     .order("logged_at", { ascending: false });
 
+  // Filter by year if provided (using wider range for timezone safety)
   if (year) {
-    const startDate = `${year}-01-01T00:00:00Z`;
-    const endDate = `${year + 1}-01-01T00:00:00Z`;
-    query = query.gte("logged_at", startDate).lt("logged_at", endDate);
+    const { start, end } = getYearRangeForQuery(year);
+    query = query.gte("logged_at", start).lt("logged_at", end);
   }
 
   const { data, error } = await query;
@@ -102,18 +108,22 @@ export async function getIllnessByDate(date: string): Promise<{
     return { data: null, error: authError ?? new Error("Not signed in") };
   }
 
-  const startOfDay = `${date}T00:00:00Z`;
-  const endOfDay = `${date}T23:59:59Z`;
+  // Use wider range for timezone safety
+  const { start, end } = getDateRangeForQuery(date);
 
   const { data, error } = await supabase
     .from("illness_entries")
     .select("id, user_id, illness_types, notes, logged_at")
     .eq("user_id", user.id)
-    .gte("logged_at", startOfDay)
-    .lte("logged_at", endOfDay)
-    .order("logged_at", { ascending: false })
-    .limit(1);
+    .gte("logged_at", start)
+    .lte("logged_at", end)
+    .order("logged_at", { ascending: false });
 
-  const entry = data && data.length > 0 ? (data[0] as IllnessEntry) : null;
-  return { data: entry, error: error ?? null };
+  // Filter to only entries that match the requested local date
+  const matchingEntry = data?.find((entry) => {
+    if (!entry.logged_at) return false;
+    return timestampToLocalDate(entry.logged_at) === date;
+  });
+
+  return { data: matchingEntry as IllnessEntry | null, error: error ?? null };
 }

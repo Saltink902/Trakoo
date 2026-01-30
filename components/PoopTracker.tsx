@@ -1,9 +1,8 @@
 "use client";
 
 import { PoopCarousel, type PoopId } from "@/components/PoopCarousel";
-import { ensureSession } from "@/lib/auth";
 import { logPoop } from "@/lib/poop";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -18,10 +17,6 @@ export function PoopTracker() {
   const [selectedPoop, setSelectedPoop] = useState<PoopId>(4);
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
-
-  useEffect(() => {
-    ensureSession();
-  }, []);
 
   const handlePoopChange = useCallback((poop: PoopId) => {
     setSelectedPoop(poop);

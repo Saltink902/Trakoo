@@ -1,24 +1,34 @@
 "use client";
 
 import { SwipeablePages } from "@/components/SwipeablePages";
-import { ensureSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
-  const [sessionReady, setSessionReady] = useState(false);
+  const router = useRouter();
+  const [guardReady, setGuardReady] = useState(false);
 
   useEffect(() => {
-    ensureSession()
-      .then(() => setSessionReady(true))
+    getSession()
+      .then((session) => {
+        if (!session) {
+          router.replace("/auth");
+          return;
+        }
+        setGuardReady(true);
+      })
       .catch((e) => {
-        console.error("[ensureSession]", e);
-        setSessionReady(true);
+        console.error("[auth guard]", e);
+        router.replace("/auth");
       });
-  }, []);
+  }, [router]);
 
-  if (!sessionReady) {
+  if (!guardReady) {
     return (
-      <div className="min-h-screen min-h-[100dvh] bg-dashboard-gradient flex items-center justify-center">
+      <div className="flex min-h-screen min-h-[100dvh] items-center justify-center bg-dashboard-gradient">
         <p className="text-trakoo-muted">Loading…</p>
       </div>
     );

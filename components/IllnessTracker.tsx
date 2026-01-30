@@ -6,7 +6,7 @@ import { DayDetailsModal } from "@/components/DayDetailsModal";
 import { logIllness, getIllnessEntries } from "@/lib/illness";
 import { getDayData, type DayData } from "@/lib/dayData";
 import type { IllnessTypeId } from "@/lib/illness";
-import { ensureSession } from "@/lib/auth";
+import { timestampToLocalDate } from "@/lib/dateUtils";
 import { useCallback, useEffect, useState } from "react";
 
 function getGreeting() {
@@ -28,25 +28,21 @@ export function IllnessTracker() {
   const [loadingDay, setLoadingDay] = useState(false);
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    ensureSession();
-  }, []);
-
   const fetchIllnessData = useCallback(async () => {
     const { data, error } = await getIllnessEntries(currentYear);
     if (!error && data) {
       const map: Record<string, string[]> = {};
       data.forEach((entry) => {
         if (entry.logged_at && entry.illness_types?.length) {
-          const d = new Date(entry.logged_at);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          const date = `${y}-${m}-${day}`;
-          if (!map[date]) map[date] = [];
-          entry.illness_types.forEach((id) => {
-            if (!map[date].includes(id)) map[date].push(id);
-          });
+          // Use shared utility for consistent timezone handling
+          const date = timestampToLocalDate(entry.logged_at);
+          // Only include entries for the current year
+          if (date.startsWith(String(currentYear))) {
+            if (!map[date]) map[date] = [];
+            entry.illness_types.forEach((id) => {
+              if (!map[date].includes(id)) map[date].push(id);
+            });
+          }
         }
       });
       setIllnessData(map);

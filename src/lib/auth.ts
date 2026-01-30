@@ -1,13 +1,12 @@
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabase";
 
 /**
- * Ensure we have a session (anonymous or otherwise) so we can save mood_entries.
- * Call once when the dashboard mounts.
+ * Get current auth session. Used for guards (redirect if logged in/out).
  */
-export async function ensureSession(): Promise<void> {
+export async function getSession(): Promise<Session | null> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  if (session) return;
-  await supabase.auth.signInAnonymously();
+  return session;
 }

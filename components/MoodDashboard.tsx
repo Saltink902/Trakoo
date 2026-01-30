@@ -5,6 +5,7 @@ import { YearCalendar } from "@/components/YearCalendar";
 import { DayDetailsModal } from "@/components/DayDetailsModal";
 import { saveMood, getMoodEntries } from "@/lib/mood";
 import { getDayData, type DayData } from "@/lib/dayData";
+import { timestampToLocalDate } from "@/lib/dateUtils";
 import { useCallback, useEffect, useState } from "react";
 
 function getGreeting() {
@@ -38,12 +39,12 @@ export function MoodDashboard() {
       const moodMap: Record<string, number> = {};
       data.forEach((entry) => {
         if (entry.created_at) {
-          const d = new Date(entry.created_at);
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          const date = `${y}-${m}-${day}`;
-          if (!moodMap[date]) moodMap[date] = entry.mood;
+          // Use shared utility for consistent timezone handling
+          const date = timestampToLocalDate(entry.created_at);
+          // Only include entries for the current year
+          if (date.startsWith(String(currentYear)) && !moodMap[date]) {
+            moodMap[date] = entry.mood;
+          }
         }
       });
       setMoodData(moodMap);

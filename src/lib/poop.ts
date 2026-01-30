@@ -1,5 +1,6 @@
 import type { PoopId } from "@/components/PoopCarousel";
 import { supabase } from "./supabase";
+import { getTodayDateString, dateToTimestamp } from "./dateUtils";
 
 export type PoopEntry = {
   id: string;
@@ -20,9 +21,14 @@ export async function logPoop(
   if (authError || !user) {
     return { error: authError ?? new Error("Not signed in") };
   }
+  // Save with explicit timestamp based on local date to avoid timezone issues
+  const localDate = getTodayDateString();
+  const timestamp = dateToTimestamp(localDate);
+
   const { error } = await supabase.from("poop_entries").insert({
     user_id: user.id,
     type,
+    logged_at: timestamp,
     ...(notes != null && notes !== "" ? { notes } : {}),
   });
   return { error: error ?? null };
