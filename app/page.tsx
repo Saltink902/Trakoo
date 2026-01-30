@@ -14,7 +14,8 @@ export default function Home() {
   useEffect(() => {
     getSession()
       .then((session) => {
-        if (!session) {
+        const isAnonymous = session?.user?.is_anonymous === true;
+        if (!session || isAnonymous) {
           router.replace("/auth");
           return;
         }

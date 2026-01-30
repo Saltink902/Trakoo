@@ -24,9 +24,18 @@ export default function AuthPage() {
 
   useEffect(() => {
     getSession()
-      .then((session) => {
-        if (session) router.replace("/");
-        else setChecking(false);
+      .then(async (session) => {
+        if (!session) {
+          setChecking(false);
+          return;
+        }
+        const isAnonymous = session.user?.is_anonymous === true;
+        if (isAnonymous) {
+          await supabase.auth.signOut();
+          setChecking(false);
+          return;
+        }
+        router.replace("/");
       })
       .catch(() => setChecking(false));
   }, [router]);
